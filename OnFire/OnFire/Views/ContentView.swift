@@ -8,9 +8,10 @@
 import SwiftUI
 
 struct ContentView: View {
+    let incendioRed = Color(red: 174.0/255.0, green: 24.0/255.0, blue: 10.0/255.0)
+    @ObservedObject var exerciseDataManager = ExerciseStreakDataManager.shared
+    
     var body: some View {
-        
-        let incendioRed = Color(red: 174.0/255.0, green: 24.0/255.0, blue: 10.0/255.0)
         
         GeometryReader { geometry in
             ZStack {
@@ -25,16 +26,26 @@ struct ContentView: View {
                     Spacer()
                     
                     // Number streak
-                    Text("0")
+                    Text("\(exerciseDataManager.currentExerciseStreak.streakCount)")
                         .font(.title)
                         .fontWeight(.bold)
                         .offset(y: -geometry.size.height * 0.04)
+                        .onAppear {
+                            // Make sure to manually trigger a refresh when the view appears
+                            exerciseDataManager.objectWillChange.send()
+                        }
                     
                     Spacer()
                     
                     // Add to streak
                     Button("Incendio") {
-                        // Do some stuff when button is pressed
+                        var newStreak = exerciseDataManager.currentExerciseStreak
+                        newStreak.streakCount += 1
+                        newStreak.lastExerciseDate = Date() // Update the date to the current date
+                        exerciseDataManager.currentExerciseStreak = newStreak
+                        
+                        // Manually trigger a refresh after updating the streak count
+                        exerciseDataManager.objectWillChange.send()
                     }
                     .foregroundColor(incendioRed)
                 }
